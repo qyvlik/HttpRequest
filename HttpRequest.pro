@@ -3,7 +3,7 @@ TEMPLATE = app
 QT += qml quick widgets
 
 SOURCES += main.cpp \
-    httprequest.cpp
+    src/httprequest.cpp
 
 RESOURCES += qml.qrc
 
@@ -14,6 +14,9 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    httprequest.h
+    src/httprequest.h \
+    src/httprequest_p.h
 
 CONFIG += c++11
+
+OTHER_FILES += *.md
