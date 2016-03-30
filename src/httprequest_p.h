@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QNetworkAccessManager>
 
 #include "httprequest.h"
 
@@ -16,12 +17,13 @@ class HttpRequestPrivate : public QObject
     Q_PROPERTY(QString statusText READ getStatusText WRITE setStatusText NOTIFY statusTextChanged)
 
 public:
-    HttpRequestPrivate(QObject* parent = Q_NULLPTR):
+    HttpRequestPrivate(QNetworkAccessManager* networkManager, QObject* parent = Q_NULLPTR):
         QObject(parent),
         timeout(300000),                            // 30 s
         reply(Q_NULLPTR),
         readyState(HttpRequest::UnStart),
-        status(HttpRequest::NoError)
+        status(HttpRequest::NoError),
+        manager(networkManager)
     {
     }
 
@@ -122,6 +124,15 @@ public:
     void setTimeout(int value)
     { timeout = value; }
 
+    QNetworkAccessManager *getManager() const
+    {
+        return manager;
+    }
+    void setManager(QNetworkAccessManager *value)
+    {
+        manager = value;
+    }
+
 Q_SIGNALS:
     void responseTextChanged();
     void readyStateChanged();
@@ -173,6 +184,8 @@ private:
 
     QList<QNetworkReply::RawHeaderPair> rawHeaderPairs;
     QByteArray responseText;
+
+    QNetworkAccessManager* manager;
 };
 
 #endif // HTTPREQUEST_P_H

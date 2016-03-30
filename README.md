@@ -49,7 +49,6 @@ function search(text) {
 ```
 var xhr = HttpRequestFactory.create();
 
-var xhr = HttpRequestFactory.create();
 xhr.finished.connect(function(){
     xhr.finished.disconnect(arguments.callee);
     console.log(httpRequest.responseText.length)

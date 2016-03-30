@@ -17,6 +17,7 @@
 */
 
 class HttpRequestPrivate;
+class HttpRequestFactory;
 class HttpRequest : public QObject
 {
     Q_OBJECT
@@ -135,11 +136,16 @@ Q_SIGNALS:
     void statusChanged();
     void statusTextChanged();
 
+    static QNetworkAccessManager netwrokAccessManager;
+
 public Q_SLOTS:
+
+protected:
+    friend class HttpRequestFactory;
+    explicit HttpRequest(QNetworkAccessManager* networkManager, QObject *parent);
 
 private:
     HttpRequestPrivate* d_ptr;
-    static QNetworkAccessManager netwrokAccessManager;
 };
 
 class QQmlEngine;
