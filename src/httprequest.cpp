@@ -109,8 +109,6 @@ void HttpRequest::send(const QString &data)
         return ;
     }
 
-    d_ptr->setReadyState(HttpRequest::Loading);
-
     connect(d_ptr, &HttpRequestPrivate::finished,
             this, &HttpRequest::finished);
 
@@ -123,16 +121,23 @@ void HttpRequest::send(const QString &data)
     connect( d_ptr->getReply(), &QNetworkReply::uploadProgress,
              this, &HttpRequest::uploadProgress);
 
-    Q_EMIT started();
+    d_ptr->increaseUsageCount();
+    const int usageNumber = d_ptr->getUsageCount();
 
     if(d_ptr->getTimeout() > 0) {
-        QTimer::singleShot(d_ptr->getTimeout(), [&](){
-            if(d_ptr->getReply() && !d_ptr->getReply()->isFinished()) {
+        QTimer::singleShot(d_ptr->getTimeout(), this, [=](){
+            if(d_ptr->getReply()
+                    && d_ptr->getReply()->isRunning()
+                    && usageNumber == d_ptr->getUsageCount())
+            {
                 Q_EMIT this->abort();
                 Q_EMIT this->timeout();
             }
         });
     }
+
+    Q_EMIT started();
+    d_ptr->setReadyState(HttpRequest::Loading);
 }
 
 /*
@@ -202,3 +207,4 @@ QObject *HttpRequestFactory::singleton(QQmlEngine *engine, QJSEngine *jsEngine)
     Q_UNUSED(jsEngine)
     return new HttpRequestFactory(engine);
 }
+

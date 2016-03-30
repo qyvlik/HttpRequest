@@ -19,11 +19,12 @@ class HttpRequestPrivate : public QObject
 public:
     HttpRequestPrivate(QNetworkAccessManager* networkManager, QObject* parent = Q_NULLPTR):
         QObject(parent),
-        timeout(300000),                            // 30 s
+        timeout(30 * 1000),                            // 30 s
         reply(Q_NULLPTR),
         readyState(HttpRequest::UnStart),
         status(HttpRequest::NoError),
-        manager(networkManager)
+        manager(networkManager),
+        usageCount(0)
     {
     }
 
@@ -47,7 +48,7 @@ public:
     {
         if(readyState != value) {
             readyState = value;
-            emit readyStateChanged();
+            Q_EMIT readyStateChanged();
         }
     }
 
@@ -58,7 +59,7 @@ public:
     {
         if(status != value ) {
             status = value;
-            emit statusChanged();
+            Q_EMIT statusChanged();
         }
     }
 
@@ -92,7 +93,7 @@ public:
     {
         if(statusText != value) {
             statusText = value;
-            emit statusTextChanged();
+            Q_EMIT statusTextChanged();
         }
     }
 
@@ -103,7 +104,7 @@ public:
     {
         if(responseText != value) {
             responseText = value;
-            emit responseTextChanged();
+            Q_EMIT responseTextChanged();
         }
     }
 
@@ -133,6 +134,14 @@ public:
         manager = value;
     }
 
+    int getUsageCount() const {
+        return usageCount;
+    }
+
+    void increaseUsageCount() {
+        usageCount++;
+    }
+
 Q_SIGNALS:
     void responseTextChanged();
     void readyStateChanged();
@@ -140,15 +149,12 @@ Q_SIGNALS:
     void statusTextChanged();
 
     void finished();
-    void timeoutChanged();
-
     void error();
 
 
 private Q_SLOTS:
     void onFinished() {
         if(reply) {
-
             this->setResponseText(reply->readAll());
             QNetworkReply::NetworkError e = reply->error();
             this->setStatus((HttpRequest::NetworkStatus)e);
@@ -157,7 +163,7 @@ private Q_SLOTS:
             if(e != QNetworkReply::NoError) {
                 this->setReadyState(HttpRequest::Error);
                 this->setStatusText(reply->errorString());
-                emit error();
+                Q_EMIT error();
                 // error Not finished
                 return ;
             } else {
@@ -165,10 +171,9 @@ private Q_SLOTS:
                 this->setStatusText("");
             }
 
-            emit finished();
+            Q_EMIT finished();
         }
     }
-
 
 private:
     int timeout;
@@ -186,6 +191,8 @@ private:
     QByteArray responseText;
 
     QNetworkAccessManager* manager;
+
+    int usageCount;
 };
 
 #endif // HTTPREQUEST_P_H

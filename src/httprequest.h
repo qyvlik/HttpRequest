@@ -119,6 +119,8 @@ public:
     */
     Q_INVOKABLE QJsonArray getAllResponseHeader() const;
 
+    static QNetworkAccessManager netwrokAccessManager;
+
 Q_SIGNALS:
     void started();
 
@@ -135,8 +137,6 @@ Q_SIGNALS:
     void readyStateChanged();
     void statusChanged();
     void statusTextChanged();
-
-    static QNetworkAccessManager netwrokAccessManager;
 
 public Q_SLOTS:
 

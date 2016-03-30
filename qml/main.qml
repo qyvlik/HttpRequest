@@ -14,6 +14,7 @@ ApplicationWindow {
     Item {
         anchors.fill: parent
 
+        // httpRequest 多次使用时注意时间间隔，最好设置超时时间为 -1禁用超时响应。
         HttpRequest { id: httpRequest }
 
         RowLayout {
@@ -85,7 +86,7 @@ ApplicationWindow {
         //httpRequest.open("GET", "https://api.github.com/zen")
         xhr.open("POST","https://music.163.com/api/search/get");
 
-        xhr.setTimeout(3 * 1000);      // 30 s
+        xhr.setTimeout(3 * 1000);      // 3 s
         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         xhr.setRequestHeader("Referer", "http://music.163.com/search/");
 
@@ -119,15 +120,10 @@ ApplicationWindow {
             console.log(httpRequest.statusText)
         });
 
-        httpRequest.timeout.connect(function(){
-            httpRequest.timeout.disconnect(arguments.callee);
-            console.log("time out")
-        });
-
         //httpRequest.open("GET", "https://api.github.com/zen")
         httpRequest.open("POST","https://music.163.com/api/search/get");
 
-        httpRequest.setTimeout(3 * 1000);      // 30 s
+        httpRequest.setTimeout(-1);
         httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         httpRequest.setRequestHeader("Referer", "http://music.163.com/search/");
 
@@ -145,7 +141,7 @@ ApplicationWindow {
             query += iter +"=" + encodeURI(jsonObject[iter]);
             i++;
         }
-        console.log("url query:", query);
+        //console.log("url query:", query);
         return query;
     }
 }
