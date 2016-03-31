@@ -38,9 +38,15 @@
 
 + `int getTimeout() const`
 
++ `void setRequestHeader(const QJsonObject& headers)`
+
 + `void setRequestHeader(const QByteArray &headerName, const QByteArray &value)`
 
++ `void setRequestCookies(const QJsonObject &cookies)`
+
 + `QString getRequestHeader(const QString& headerName) const`
+
++ `QJsonArray getAllResponseHeader() const`
 
 + `void open(const QString& method, const QUrl& url, bool async = true)`
 
@@ -158,23 +164,67 @@ xhr.send();
 
 获取最近一次设置的超时时间。
 
+> `void setRequestHeader(const QJsonObject& headers)`
+
+一次性设置多个请求头。只有在 `readyState` 不处于 `Loading` 时，设置有效。
+
+```
+var headers = {
+    'Accept': '*/*',
+    'Accept-Encoding': 'gzip,deflate,sdch',
+    'Accept-Language': 'zh-CN,zh;q=0.8,gl;q=0.6,zh-TW;q=0.4',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Host': 'music.163.com',
+    'Referer': 'http://music.163.com/search/',
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
+};
+
+xhr.setRequestHeader(headers);
+```
+
 > `void setRequestHeader(const QByteArray &headerName, const QByteArray &value)`
 
-设置请求头。
+设置请求头。只有在 `readyState` 不处于 `Loading` 时，设置有效。
 
 ```
 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+```
+
+> `void setRequestCookies(const QJsonObject &cookies)`
+
+为请求头设置 `Cookie`。
+
+> **注意**：如果通过 `setRequestHeader` 或者 `setRequestCookies` 为请求头设置了 `Cookie`，就不会使用上一次网页返回的默认的 `Cookie`。
+
+```
+var cookies = {
+    'appver': '1.5.2',
+};
+
+xhr.setRequestCookies(cookies);
 ```
 
 > `QString getRequestHeader(const QString& headerName) const`
 
 获取对应的请求头。
 
+> `QJsonArray getAllResponseHeader() const`
+
+获取所有响应头。格式如下：
+
+```
+[
+  {"header":"value"},
+  {"header":"value"},
+]
+```
+
 > `void open(const QString& method, const QUrl& url, bool async = true)`
 
 准备一次网络请求，设置请求方法，请求地址，默认也只支持异步请求。
 
-注意如果方法为 `POST` 时，必须设置 `Content-Type` 请求头。
+> **注意**：如果方法为 `POST` 时，必须设置 `Content-Type` 请求头。
 
 ```
 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");

@@ -118,7 +118,6 @@ public:
         this->setMethodName("");
     }
 
-
     int getTimeout() const
     { return timeout; }
 

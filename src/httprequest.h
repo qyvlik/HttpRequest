@@ -82,6 +82,9 @@ public:
     Q_ENUM(NetworkStatus)
 
     explicit HttpRequest(QObject *parent = 0);
+
+    explicit HttpRequest(QNetworkAccessManager* networkManager, QObject *parent);
+
     ~HttpRequest();
 
     Q_INVOKABLE void clear();
@@ -89,6 +92,10 @@ public:
     Q_INVOKABLE void setTimeout(qint32 time);
 
     Q_INVOKABLE int getTimeout() const;
+
+    Q_INVOKABLE void setRequestCookies(const QJsonObject& cookies);
+
+    Q_INVOKABLE void setRequestHeader(const QJsonObject& headers);
 
     Q_INVOKABLE void setRequestHeader(const QByteArray &headerName, const QByteArray &value);
 
@@ -110,13 +117,6 @@ public:
 
     State getReadyState() const;
 
-    /**
-      data format:
-      [
-        {"header":"Cookie", "value":"564561"},
-        {"header":"Cookie", "value":"564561"},
-      ]
-    */
     Q_INVOKABLE QJsonArray getAllResponseHeader() const;
 
     static QNetworkAccessManager netwrokAccessManager;
@@ -142,7 +142,6 @@ public Q_SLOTS:
 
 protected:
     friend class HttpRequestFactory;
-    explicit HttpRequest(QNetworkAccessManager* networkManager, QObject *parent);
 
 private:
     HttpRequestPrivate* d_ptr;

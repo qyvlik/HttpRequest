@@ -4,7 +4,26 @@
 #include <QtQml>
 
 #include "src/httprequest.h"
+#include <QStandardPaths>
+#include <QtDebug>
 
+#include <QQmlNetworkAccessManagerFactory>
+#include "src/networkcookiejar.h"
+
+class MyNetworkAccessManagerFactory : public QQmlNetworkAccessManagerFactory
+{
+public:
+    virtual QNetworkAccessManager *create(QObject *parent);
+};
+
+QNetworkAccessManager *MyNetworkAccessManagerFactory::create(QObject *parent)
+{
+    QNetworkAccessManager *nam = new QNetworkAccessManager(parent);
+
+    nam->setCookieJar(new NetworkCookieJar(nam));
+
+    return nam;
+}
 
 int main(int argc, char *argv[])
 {
@@ -54,6 +73,8 @@ int main(int argc, char *argv[])
                                                  &HttpRequestFactory::singleton);
 
     QQmlApplicationEngine engine;
+
+    engine.setNetworkAccessManagerFactory(new MyNetworkAccessManagerFactory());
 
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
 

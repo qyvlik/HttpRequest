@@ -1,9 +1,12 @@
 #include "httprequest.h"
 #include "httprequest_p.h"
+#include "networkcookiejar.h"
 
 #include <QTimer>
 #include <QtDebug>
 #include <QtQml>
+#include <QNetworkCookie>
+#include <QVariant>
 
 QNetworkAccessManager HttpRequest::netwrokAccessManager;
 
@@ -56,8 +59,41 @@ int HttpRequest::getTimeout() const
     return d_ptr->getTimeout();
 }
 
+void HttpRequest::setRequestCookies(const QJsonObject &cookies)
+{
+    QJsonObject::ConstIterator iter = cookies.begin();
+    QJsonObject::ConstIterator end = cookies.end();
+
+    QByteArray cookiesString = "";
+
+    while(iter != end) {
+        QByteArray cookieName = iter.key().toUtf8();
+        QByteArray cookieValue = iter.value().toString().toUtf8();
+        QByteArray cookieString = cookieName + "=" + cookieValue + "; ";
+        cookiesString += cookieString;
+
+        iter++;
+    }
+    this->setRequestHeader("Cookie", cookiesString);
+}
+
+void HttpRequest::setRequestHeader(const QJsonObject &headers)
+{
+    QJsonObject::ConstIterator iter = headers.begin();
+    QJsonObject::ConstIterator end = headers.end();
+
+    while(iter != end) {
+        this->setRequestHeader(iter.key().toUtf8(), iter.value().toString().toUtf8());
+        iter++;
+    }
+}
+
 void HttpRequest::setRequestHeader(const QByteArray &headerName, const QByteArray &value)
 {
+    if(d_ptr->getReadyState() == Loading) {
+        return ;
+    }
+
     QNetworkRequest request(d_ptr->getRequest());
     request.setRawHeader(headerName, value);
     d_ptr->setRequest(request);
@@ -84,6 +120,24 @@ void HttpRequest::send(const QString &data)
     if(d_ptr->getReadyState() == Loading) {
         return ;
     }
+    NetworkCookieJar* cookieJar = qobject_cast<NetworkCookieJar*>(d_ptr->getManager()->cookieJar());
+    if(cookieJar) {
+
+        QNetworkRequest request(d_ptr->getRequest());
+        auto cookies = cookieJar->getAllCookies();
+        QByteArray cookiesString;
+        foreach(auto cookie, cookies) {
+            cookiesString += cookie.toRawForm() + ";";
+        }
+        if(!request.hasRawHeader("Cookie")) {
+#ifdef QT_DEBUG
+        qDebug() << "cookiesString" << cookiesString;
+#endif
+            request.setRawHeader("Cookie", cookiesString);
+        }
+        d_ptr->setRequest(request);
+    }
+
     if(d_ptr->getMethodName() == "GET") {
         QNetworkReply* reply = d_ptr->getManager()->get(d_ptr->getRequest());
         d_ptr->setReply(reply);
@@ -183,7 +237,7 @@ HttpRequestFactory::HttpRequestFactory(QObject *parent):
 
 HttpRequest *HttpRequestFactory::create()
 {
-    HttpRequest* httpRequest ;
+    HttpRequest* httpRequest = 0;
     QQmlEngine* qmlEngine = qobject_cast<QQmlEngine *>(this->parent());
     if(qmlEngine && qmlEngine->networkAccessManager()) {
         httpRequest = new HttpRequest(qmlEngine->networkAccessManager(),
