@@ -113,6 +113,7 @@ void HttpRequest::open(const QString &method, const QUrl &url, bool async)
     request.setUrl(url);
     d_ptr->setRequest(request);
     d_ptr->setReadyState(HttpRequest::UnStart);
+    Q_EMIT this->abort();
 }
 
 void HttpRequest::send(const QString &data)
