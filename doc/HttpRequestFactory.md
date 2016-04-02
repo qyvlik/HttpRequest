@@ -36,5 +36,5 @@ xhr.timeout.connect(function(){
 });
 
 httpRequest.open("GET", "https://api.github.com/zen")
-xhr.send(urlQuery(data));
+xhr.send();
 ```

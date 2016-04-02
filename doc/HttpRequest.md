@@ -54,15 +54,15 @@
 
 ## 详细描述
 
-`HttpRequest` 使用 Qt 的网络模块编写。通过注册到 QML 中，就可以像使用 `XMLHttpRequest` 那样使用了。
+`HttpRequest` 使用 Qt 的**网络模块**编写。通过注册到 QML 中，就可以像使用 `XMLHttpRequest` 那样使用了。
 
 ## 属性文档
 
-> `responseText` : `string`
+> ### `responseText` : `string`
 
 进行网络请求后获得的内容。
 
-> `readyState` : `HttpRequest::State`
+> ### `readyState` : `HttpRequest::State`
 
 | 枚举值 | 描述 |
 |:---:|:--:|
@@ -70,30 +70,31 @@
 | Loading | 正在请求远端数据 |
 | Error | 请求远端数据错误，错误提示查看 `statusText` |
 | Finished | 请求结束后的状态 |
+| TimeOut | 请求超时 |
 
-> `status` : `HttpRequest::NetworkStatus`
+> ### `status` : `HttpRequest::NetworkStatus`
 
 对比查看 [`QNetworkReply::NetworkError`](http://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum)。
 
-> `statusText` : `string`
+> ### `statusText` : `string`
 
 对比查看 [`QNetworkReply::errorString()`](http://doc.qt.io/qt-5/qiodevice.html#errorString)。
 
 ## 信号文档
 
-> `void started();`
+> ### `void started();`
 
 在进行网络请求时触发。
 
-> `void downloadProgress(qint64 bytesReceived, qint64 bytesTotal)`
+> ### `void downloadProgress(qint64 bytesReceived, qint64 bytesTotal)`
 
 在拉取数据时触发。详情查看 [`QNetworkReply::downloadProgress`](http://doc.qt.io/qt-5/qnetworkreply.html#downloadProgress)。
 
-> `void uploadProgress(qint64 bytesSent, qint64 bytesTotal)`
+> ### `void uploadProgress(qint64 bytesSent, qint64 bytesTotal)`
 
 在上传数据时触发。详情查看 [`QNetworkReply::uploadProgress`](http://doc.qt.io/qt-5/qnetworkreply.html#uploadProgress)。
 
-> `void finished()`
+> ### `void finished()`
 
 请求完成时触发。此信号触发时，`error()` 以及 `timeout()` 不会再触发。
 
@@ -109,7 +110,7 @@ xhr.open("GET","http://www.baidu.com");
 xhr.send();
 ```
 
-> `void error()`
+> ### `void error()`
 
 请求错误时触发。此信号触发时，`finished()` 以及 `timeout()` 不会再触发。
 
@@ -124,7 +125,7 @@ xhr.error.connect(function(){
 ...
 ```
 
-> `void timeout()`
+> ### `void timeout()`
 
 响应超时时触发。此信号触发时，`error()` 以及 `finished()` 不会再触发。
 
@@ -141,15 +142,15 @@ xhr.timeout.connect(function(){
 
 ## 方法文档
 
-> `void abort()`
+> ### `void abort()`
 
 取消网络请求。
 
-> `void clear()`
+> ### `void clear()`
 
 清空请求设置，例如请求网址，请求头等。
 
-> `void setTimeout(qint32 time)`
+> ### `void setTimeout(qint32 time)`
 
 设置超时时间。仅当 `readyState` 不处于 `HttpRequest.Loading` 时设置有效。就是在 `send()` 之前设置有效。单位为毫秒。
 
@@ -160,11 +161,11 @@ xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 xhr.send();
 ```
 
-> `int getTimeout() const`
+> ### `int getTimeout() const`
 
 获取最近一次设置的超时时间。
 
-> `void setRequestHeader(const QJsonObject& headers)`
+> ### `void setRequestHeader(const QJsonObject& headers)`
 
 一次性设置多个请求头。只有在 `readyState` 不处于 `Loading` 时，设置有效。
 
@@ -183,7 +184,7 @@ var headers = {
 xhr.setRequestHeader(headers);
 ```
 
-> `void setRequestHeader(const QByteArray &headerName, const QByteArray &value)`
+> ### `void setRequestHeader(const QByteArray &headerName, const QByteArray &value)`
 
 设置请求头。只有在 `readyState` 不处于 `Loading` 时，设置有效。
 
@@ -191,7 +192,7 @@ xhr.setRequestHeader(headers);
 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 ```
 
-> `void setRequestCookies(const QJsonObject &cookies)`
+> ### `void setRequestCookies(const QJsonObject &cookies)`
 
 为请求头设置 `Cookie`。
 
@@ -205,11 +206,11 @@ var cookies = {
 xhr.setRequestCookies(cookies);
 ```
 
-> `QString getRequestHeader(const QString& headerName) const`
+> ### `QString getRequestHeader(const QString& headerName) const`
 
 获取对应的请求头。
 
-> `QJsonArray getAllResponseHeader() const`
+> ### `QJsonArray getAllResponseHeader() const`
 
 获取所有响应头。格式如下：
 
@@ -220,7 +221,7 @@ xhr.setRequestCookies(cookies);
 ]
 ```
 
-> `void open(const QString& method, const QUrl& url, bool async = true)`
+> ### `void open(const QString& method, const QUrl& url, bool async = true)`
 
 准备一次网络请求，设置请求方法，请求地址，默认也只支持异步请求。
 
@@ -232,7 +233,7 @@ xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
 支持的请求方式为 `GET`，`POST`，`DELETE`，`PUT`，`HEAD`。
 
-> `void send(const QString& data = QString(""))`
+> ### `void send(const QString& data = QString(""))`
 
 发送网络请求，如果请求方法为 `POST`，`PUT` 等方法，给 `send` 传入数据。
 
