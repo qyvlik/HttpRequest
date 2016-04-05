@@ -44,6 +44,7 @@ HttpRequest::~HttpRequest()
 
 void HttpRequest::clear()
 {
+    Q_EMIT abort();
     d_ptr->clear();
 }
 

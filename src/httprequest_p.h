@@ -116,6 +116,7 @@ public:
         this->setRequest(QNetworkRequest());
         this->setReadyState(HttpRequest::UnStart);
         this->setMethodName("");
+        this->setReply(Q_NULLPTR);
     }
 
     int getTimeout() const
