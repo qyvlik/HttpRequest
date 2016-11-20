@@ -32,6 +32,7 @@ public:
         Loading,
         Error,
         Finished,
+        TimeOut,
     };
     Q_ENUM(State)
 

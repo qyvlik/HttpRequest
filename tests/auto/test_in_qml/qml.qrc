@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/Component/NetEasyMusicSearchPage.qml</file>
+        <file>qml/Component/PlayBar.qml</file>
+    </qresource>
+</RCC>
