@@ -10,17 +10,23 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QQmlParserStatus>
 
-/*
- * Only For Small Size Http Request
- * Don't Use In Big Size Http Request
-*/
+
+class QQmlEngine;
+class QJSEngine;
 
 class HttpRequestPrivate;
 class HttpRequestFactory;
-class HttpRequest : public QObject
+
+/**
+ * Only For Small Size Http Request
+ * Don't Use In Big Size Http Request
+*/
+class HttpRequest : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
+    Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QString responseText READ getResponseText NOTIFY responseTextChanged)
     Q_PROPERTY(HttpRequest::State readyState READ getReadyState NOTIFY readyStateChanged)
     Q_PROPERTY(HttpRequest::NetworkStatus status READ getStatus  NOTIFY statusChanged)
@@ -106,10 +112,6 @@ public:
 
     Q_INVOKABLE void send(const QString& data = QString(""));
 
-    // Q_INVOKABLE void upload(const QUrl& url, const QString& fileName);
-
-    // Q_INVOKABLE void download(const QUrl& url, const QString& fileName);
-
     QString getResponseText() const;
 
     QString getStatusText() const;
@@ -120,7 +122,13 @@ public:
 
     Q_INVOKABLE QJsonArray getAllResponseHeader() const;
 
-    static QNetworkAccessManager netwrokAccessManager;
+    QNetworkAccessManager* manager() const;
+    void setManager(QNetworkAccessManager* manager);
+
+    // QQmlParserStatus interface
+public:
+    void classBegin() override;
+    void componentComplete() override;
 
 Q_SIGNALS:
     void started();
@@ -146,19 +154,22 @@ protected:
 
 private:
     HttpRequestPrivate* d_ptr;
+
+
 };
 
-class QQmlEngine;
-class QJSEngine;
+
 class HttpRequestFactory :  public QObject
 {
     Q_OBJECT
 public:
-    explicit HttpRequestFactory(QObject* parent=Q_NULLPTR);
+    explicit HttpRequestFactory(QObject* parent = Q_NULLPTR);
 
     Q_INVOKABLE HttpRequest* create();
 
     static QObject* singleton(QQmlEngine* engine, QJSEngine* jsEngine);
 };
+
+
 
 #endif // HTTPREQUEST_H

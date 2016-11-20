@@ -8,21 +8,9 @@
 #include <QNetworkCookie>
 #include <QVariant>
 
-QNetworkAccessManager HttpRequest::netwrokAccessManager;
-
 HttpRequest::HttpRequest(QObject *parent) :
-    QObject(parent),
-    d_ptr(new HttpRequestPrivate(&HttpRequest::netwrokAccessManager, this))
-{
-    qRegisterMetaType<NetworkStatus>("HttpRequest::NetworkStatus");
-    qRegisterMetaType<State>("HttpRequest::State");
-
-    connect(d_ptr, &HttpRequestPrivate::responseTextChanged, this, &HttpRequest::responseTextChanged);
-    connect(d_ptr, &HttpRequestPrivate::readyStateChanged, this, &HttpRequest::readyStateChanged);
-    connect(d_ptr, &HttpRequestPrivate::statusChanged, this, &HttpRequest::statusChanged);
-    connect(d_ptr, &HttpRequestPrivate::statusTextChanged, this, &HttpRequest::statusTextChanged);
-    connect(d_ptr, &HttpRequestPrivate::error, this, &HttpRequest::error);
-}
+    HttpRequest(Q_NULLPTR, parent)
+{ }
 
 HttpRequest::HttpRequest(QNetworkAccessManager *networkManager, QObject *parent):
     QObject(parent),
@@ -119,6 +107,13 @@ void HttpRequest::open(const QString &method, const QUrl &url, bool async)
 
 void HttpRequest::send(const QString &data)
 {
+    QNetworkAccessManager* netManager = d_ptr->getManager();
+    if(netManager == Q_NULLPTR) {
+        qDebug() << "NetAccessManager is nullptr";
+        Q_EMIT error();
+        return;
+    }
+
     if(d_ptr->getReadyState() == Loading) {
         return ;
     }
@@ -140,28 +135,29 @@ void HttpRequest::send(const QString &data)
         d_ptr->setRequest(request);
     }
 
-    if(d_ptr->getMethodName() == "GET") {
-        QNetworkReply* reply = d_ptr->getManager()->get(d_ptr->getRequest());
+    QString methodName = d_ptr->getMethodName().toUpper();
+
+    if(methodName == "GET") {
+        QNetworkReply* reply = netManager->get(d_ptr->getRequest());
         d_ptr->setReply(reply);
 
-    } else if(d_ptr->getMethodName() == "POST") {
-        QNetworkReply* reply = d_ptr->getManager()->post(d_ptr->getRequest(), data.toUtf8());
+    } else if(methodName == "POST") {
+        QNetworkReply* reply = netManager->post(d_ptr->getRequest(), data.toUtf8());
         d_ptr->setReply(reply);
 
-    } else if(d_ptr->getMethodName() == "PUT") {
-        QNetworkReply* reply = d_ptr->getManager()->put(d_ptr->getRequest(), data.toUtf8());
+    } else if(methodName == "PUT") {
+        QNetworkReply* reply = netManager->put(d_ptr->getRequest(), data.toUtf8());
         d_ptr->setReply(reply);
 
-    } else if(d_ptr->getMethodName() == "DELETE") {
-        QNetworkReply* reply = d_ptr->getManager()->deleteResource(d_ptr->getRequest());
+    } else if(methodName == "DELETE") {
+        QNetworkReply* reply = netManager->deleteResource(d_ptr->getRequest());
         d_ptr->setReply(reply);
 
-
-    } else if(d_ptr->getMethodName() == "HEAD") {
-        QNetworkReply* reply = d_ptr->getManager()->head(d_ptr->getRequest());
+    } else if(methodName == "HEAD") {
+        QNetworkReply* reply = netManager->head(d_ptr->getRequest());
         d_ptr->setReply(reply);
     } else {
-        // invaild method
+        qDebug() << "Invaild method : " << methodName;
         return ;
     }
 
@@ -177,8 +173,7 @@ void HttpRequest::send(const QString &data)
     connect( d_ptr->getReply(), &QNetworkReply::uploadProgress,
              this, &HttpRequest::uploadProgress);
 
-    d_ptr->increaseUsageCount();
-    const int usageNumber = d_ptr->getUsageCount();
+    const int usageNumber = d_ptr->increaseUsageCount();
 
     if(d_ptr->getTimeout() > 0) {
         QTimer::singleShot(d_ptr->getTimeout(), this, [=](){
@@ -233,28 +228,48 @@ QJsonArray HttpRequest::getAllResponseHeader() const
     return responseHeaders;
 }
 
+QNetworkAccessManager *HttpRequest::manager() const {
+    return d_ptr->getManager();
+}
+
+void HttpRequest::setManager(QNetworkAccessManager *manager) {
+    d_ptr->setManager(manager);
+}
+
+
+void HttpRequest::classBegin()
+{
+    // qDebug() << Q_FUNC_INFO;
+}
+
+void HttpRequest::componentComplete()
+{
+    // qDebug() << Q_FUNC_INFO;
+    QQmlContext* context = qmlContext(this);
+    if(context && context->engine() && context->engine()->networkAccessManager()) {
+        d_ptr->setManager(context->engine()->networkAccessManager());
+         qDebug() << "Set Net Access Manager Success";
+    }
+}
+
 HttpRequestFactory::HttpRequestFactory(QObject *parent):
     QObject(parent)
 {}
 
 HttpRequest *HttpRequestFactory::create()
 {
-    HttpRequest* httpRequest = 0;
+    qDebug() << Q_FUNC_INFO;
+    HttpRequest* httpRequest = nullptr;
     QQmlEngine* qmlEngine = qobject_cast<QQmlEngine *>(this->parent());
     if(qmlEngine && qmlEngine->networkAccessManager()) {
         httpRequest = new HttpRequest(qmlEngine->networkAccessManager(),
                                       Q_NULLPTR);
     } else {
-        httpRequest = new HttpRequest;
+        httpRequest = new HttpRequest();
     }
 
     QQmlEngine::setObjectOwnership(httpRequest, QQmlEngine::JavaScriptOwnership);
 
-    //#ifdef QT_DEBUG
-    //    connect(httpRequest, &HttpRequest::destroyed, [=](){
-    //        qDebug() << "Delete " << httpRequest << " by QML Engine";
-    //    });
-    //#endif
     return httpRequest;
 }
 

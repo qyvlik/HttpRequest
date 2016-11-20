@@ -15,6 +15,8 @@ ApplicationWindow {
     height: 640
     visible: true
 
+    // HttpRequest {}
+
     NetEasyMusicSearchPage {
         anchors.fill: parent
     }

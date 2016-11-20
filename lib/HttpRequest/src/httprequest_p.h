@@ -17,6 +17,11 @@ class HttpRequestPrivate : public QObject
     Q_PROPERTY(QString statusText READ getStatusText WRITE setStatusText NOTIFY statusTextChanged)
 
 public:
+
+    HttpRequestPrivate(QObject* parent = Q_NULLPTR):
+        HttpRequestPrivate(Q_NULLPTR, parent)
+    {}
+
     HttpRequestPrivate(QNetworkAccessManager* networkManager, QObject* parent = Q_NULLPTR):
         QObject(parent),
         timeout(30 * 1000),                            // 30 s
@@ -25,55 +30,54 @@ public:
         status(HttpRequest::NoError),
         manager(networkManager),
         usageCount(0)
-    {
-    }
+    { }
 
     ~HttpRequestPrivate()
-    {
-        //        if(reply) {
-        //            reply->deleteLater();
-        //        }
+    { }
+
+    QString getMethodName() const {
+        return methodName;
     }
 
-    QString getMethodName() const
-    { return methodName; }
+    void setMethodName(const QString &value) {
+        methodName = value;
+    }
 
-    void setMethodName(const QString &value)
-    { methodName = value; }
+    HttpRequest::State getReadyState() const {
+        return readyState;
+    }
 
-    HttpRequest::State getReadyState() const
-    { return readyState; }
-
-    void setReadyState(const HttpRequest::State &value)
-    {
+    void setReadyState(const HttpRequest::State &value) {
         if(readyState != value) {
             readyState = value;
             Q_EMIT readyStateChanged();
         }
     }
 
-    HttpRequest::NetworkStatus getStatus() const
-    { return status; }
+    HttpRequest::NetworkStatus getStatus() const {
+        return status;
+    }
 
-    void setStatus(const HttpRequest::NetworkStatus &value)
-    {
+    void setStatus(const HttpRequest::NetworkStatus &value)  {
         if(status != value ) {
             status = value;
             Q_EMIT statusChanged();
         }
     }
 
-    QNetworkRequest getRequest() const
-    { return request; }
+    QNetworkRequest getRequest() const {
+        return request;
+    }
 
-    void setRequest(const QNetworkRequest &value)
-    { request = value; }
+    void setRequest(const QNetworkRequest &value) {
+        request = value;
+    }
 
-    QNetworkReply *getReply() const
-    { return reply; }
+    QNetworkReply *getReply() const {
+        return reply;
+    }
 
-    void setReply(QNetworkReply *value)
-    {
+    void setReply(QNetworkReply *value) {
         if(reply != value) {
             if(reply) {
                 reply->disconnect();
@@ -86,30 +90,31 @@ public:
         }
     }
 
-    QString getStatusText() const
-    { return statusText; }
+    QString getStatusText() const {
+        return statusText;
+    }
 
-    void setStatusText(const QString &value)
-    {
+    void setStatusText(const QString &value) {
         if(statusText != value) {
             statusText = value;
             Q_EMIT statusTextChanged();
         }
     }
 
-    QByteArray getResponseText() const
-    { return responseText; }
+    QByteArray getResponseText() const {
+        return responseText;
+    }
 
-    void setResponseText(const QByteArray &value)
-    {
+    void setResponseText(const QByteArray &value) {
         if(responseText != value) {
             responseText = value;
             Q_EMIT responseTextChanged();
         }
     }
 
-    QList<QNetworkReply::RawHeaderPair> getRawHeaderPairs() const
-    { return rawHeaderPairs; }
+    QList<QNetworkReply::RawHeaderPair> getRawHeaderPairs() const {
+        return rawHeaderPairs;
+    }
 
     void clear() {
         rawHeaderPairs.clear();
@@ -117,20 +122,22 @@ public:
         this->setReadyState(HttpRequest::UnStart);
         this->setMethodName("");
         this->setReply(Q_NULLPTR);
+        this->usageCount = 0;
     }
 
-    int getTimeout() const
-    { return timeout; }
+    int getTimeout() const {
+        return timeout;
+    }
 
-    void setTimeout(int value)
-    { timeout = value; }
+    void setTimeout(int value) {
+        timeout = value;
+    }
 
-    QNetworkAccessManager *getManager() const
-    {
+    QNetworkAccessManager *getManager() const {
         return manager;
     }
-    void setManager(QNetworkAccessManager *value)
-    {
+
+    void setManager(QNetworkAccessManager *value) {
         manager = value;
     }
 
@@ -138,8 +145,8 @@ public:
         return usageCount;
     }
 
-    void increaseUsageCount() {
-        usageCount++;
+    int increaseUsageCount() {
+       return ++usageCount;
     }
 
 Q_SIGNALS:
@@ -147,10 +154,8 @@ Q_SIGNALS:
     void readyStateChanged();
     void statusChanged();
     void statusTextChanged();
-
     void finished();
     void error();
-
 
 private Q_SLOTS:
     void onFinished() {
@@ -192,6 +197,7 @@ private:
 
     QNetworkAccessManager* manager;
 
+    // for time out
     int usageCount;
 };
 
